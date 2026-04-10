@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Orphanage Medicine Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <nav class="main-nav">
+        <div class="nav-brand">
+            <span>🏥</span> Orphanage Care
+        </div>
+        <div class="nav-actions">
+            {% if session['user'] %}
+            <span class="user-tag">Care-taker: {{ session['user'] }}</span>
+            <a href="/logout" class="logout-link">Logout</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+
+        <!-- 📢 FLASH MESSAGES -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="card"
+            style="border-left: 5px solid {% if category == 'danger' %}#ef4444{% else %}#10b981{% endif %}; padding: 16px; margin-bottom: 24px;">
+            <p
+                style="margin: 0; font-weight: 600; color: {% if category == 'danger' %}#b91c1c{% else %}#065f46{% endif %};">
+                {{ message }}
+            </p>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- 🔔 ALERT SECTION -->
+        {% if due_records %}
+        <div class="premium-alert">
+            <div class="alert-header">
+                <span>⚠️</span> PRIORITY: Medicine Due Now
+            </div>
+            <div class="alert-body">
+                {% for record in due_records %}
+                <div class="due-item">
+                    <div>
+                        <strong>{{ child_map.get(record.child_id|string, 'Unknown/Deleted Child #' ~ record.child_id)
+                            }}</strong> needs
+                        <span class="badge badge-warning">{{ record.medicine }}</span> ({{ record.dosage }})
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        {% if record.child_id|string in child_map %}
+                        <a href="/mark_done/{{ record.id }}">
+                            <button class="auth-btn" style="padding: 8px 16px; margin: 0; width: auto;">✔ Mark
+                                Done</button>
+                        </a>
+                        {% else %}
+                        <a href="/delete_record/{{ record.id }}">
+                            <button class="auth-btn"
+                                style="padding: 8px 16px; margin: 0; width: auto; background: var(--accent) !important;">🗑
+                                Delete Orphan</button>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="dashboard-grid">
+
+            <!-- 📋 LEFT COLUMN: DATA -->
+            <div class="main-content">
+                <div class="card">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h2 style="margin: 0; font-weight: 800; letter-spacing: -0.5px;">Children Directory</h2>
+                        <span class="user-tag">{{ children|length }} Total Registered</span>
+                    </div>
+
+                    <div class="premium-search-wrapper">
+                        <span style="position: absolute; left: 18px; top: 16px; color: #94a3b8;">🔍</span>
+                        <input type="text" id="search" class="premium-search" placeholder="Search by child name..."
+                            onkeyup="searchChild()">
+                    </div>
+
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="childrenTable">
+                            {% for child in children %}
+                            <tr class="{% if child.id in due_child_ids %}row-due{% endif %}">
+                                <td style="color: #94a3b8; font-size: 0.8rem;">#{{ child.id }}</td>
+                                <td style="font-weight: 600;">{{ child.name }}</td>
+                                <td>{{ child.age }} yrs</td>
+                                <td>{{ child.gender }}</td>
+                                <td>
+                                    {% set is_due = false %}
+                                    {% for record in due_records %}
+                                    {% if record.child_id == child.id %}{% set is_due = true %}{% endif %}
+                                    {% endfor %}
+                                    {% if is_due %}
+                                    <span class="badge badge-warning">Needs Meds</span>
+                                    {% else %}
+                                    <span class="badge badge-success">Healthy</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 12px; align-items: center;">
+                                        <a href="/child/{{ child.id }}" class="auth-link">View Records →</a>
+                                        <a href="javascript:void(0)" onclick="prefillSchedule('{{ child.id }}')"
+                                            class="auth-link" style="color: var(--secondary);">Schedule +</a>
+                                        <a href="/delete_child/{{ child.id }}" class="auth-link"
+                                            style="color: var(--accent);"
+                                            onclick="return confirm('Are you sure you want to delete {{ child.name }}? This will also remove all their medical records.')"
+                                            title="Delete Child">🗑</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 🛠️ RIGHT COLUMN: ACTIONS -->
+            <div class="sidebar">
+                <div class="card">
+                    <h3 style="margin-top: 0; font-weight: 700;">👶 New Child</h3>
+                    <form method="POST" action="/add_child" class="auth-form">
+                        <div class="input-group">
+                            <label>Child ID (Optional)</label>
+                            <input type="number" name="child_id" class="auth-input"
+                                style="color: #0f172a !important; background: #f8fafc !important;"
+                                placeholder="Leave blank to autogenerate">
+                        </div>
+                        <div class="input-group">
+                            <label>Full Name</label>
+                            <input type="text" name="name" class="auth-input"
+                                style="color: #0f172a !important; background: #f8fafc !important;" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Age</label>
+                            <input type="number" name="age" class="auth-input"
+                                style="color: #0f172a !important; background: #f8fafc !important;" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Gender</label>
+                            <select name="gender" class="auth-input"
+                                style="color: #0f172a !important; background: #f8fafc !important;">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="auth-btn">Register Child</button>
+                    </form>
+                </div>
+
+                <div class="card" id="schedule-card">
+                    <h3 style="margin-top: 0; font-weight: 700;">💊 Quick Record</h3>
+                    <form method="POST" action="/add_record" class="auth-form">
+                        <div class="input-group">
+                            <label>Select Child</label>
+                            <select name="child_id" id="childSelect" class="auth-input"
+                                style="color: #0f172a !important; background: #f8fafc !important;" required>
+                                <option value="" disabled selected>-- Choose Child --</option>
+                                {% for child in children %}
+                                <option value="{{ child.id }}">{{ child.name }} (ID: {{ child.id }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Diagnose</label>
+                            <input type="text" name="diagnose" class="auth-input"
+                                style="color: #0f172a !important; background: #f8fafc !important;"
+                                placeholder="e.g. Common Cold">
+                        </div>
+                        <div class="input-group">
+                            <label>Medicine</label>
+                            <input type="text" name="medicine" class="auth-input"
+                                style="color: #0f172a !important; background: #f8fafc !important;" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Dosage</label>
+                            <input type="text" name="dosage" class="auth-input"
+                                style="color: #0f172a !important; background: #f8fafc !important;"
+                                placeholder="e.g. 5ml">
+                        </div>
+                        <div class="input-group">
+                            <label>Date & Time</label>
+                            <input type="datetime-local" name="datetime" class="auth-input"
+                                style="color: #0f172a !important; background: #f8fafc !important;" required>
+                        </div>
+                        <button type="submit" class="auth-btn" style="background: var(--secondary) !important;">Schedule
+                            Treatment</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 🔄 SCRIPTS -->
+    <script>
+        function prefillSchedule(childId) {
+            const select = document.getElementById("childSelect");
+            if (select) {
+                select.value = childId;
+                // Scroll to the form
+                document.getElementById("schedule-card").scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Flash the card to draw attention
+                document.getElementById("schedule-card").style.boxShadow = "0 0 20px rgba(99, 102, 241, 0.4)";
+                setTimeout(() => {
+                    document.getElementById("schedule-card").style.boxShadow = "";
+                }, 2000);
+            }
+        }
+
+        function searchChild() {
+            let input = document.getElementById("search").value.toLowerCase();
+            let rows = document.querySelectorAll("#childrenTable tr");
+            rows.forEach(row => {
+                // Target the 'Name' column (index 1) explicitly
+                let nameCell = row.cells[1];
+                if (nameCell) {
+                    let name = nameCell.innerText.toLowerCase();
+                    row.style.display = name.includes(input) ? "" : "none";
+                }
+            });
+        }
+
+        // Auto Refresh Logic
+        let isSubmitting = false;
+        let isTyping = false;
+
+        // Detect if user is typing or focusing an input
+        document.querySelectorAll("input, select, textarea").forEach(el => {
+            el.addEventListener("focus", () => isTyping = true);
+            el.addEventListener("blur", () => isTyping = false);
+            el.addEventListener("input", () => isTyping = true);
+        });
+
+        document.querySelectorAll("form").forEach(form => {
+            form.addEventListener("submit", () => isSubmitting = true);
+        });
+
+        setInterval(function () {
+            // Only reload if not submitting and not typing/focusing
+            if (!isSubmitting && !isTyping) {
+                location.reload();
+            }
+        }, 30000); 
+    </script>
+
+</body>
+
+</html>

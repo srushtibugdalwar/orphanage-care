@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Orphanage Medicine Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h1 class="auth-title">Join Us</h1>
+            <p class="auth-subtitle">Create your caretaker account</p>
+            
+            <form method="POST" class="auth-form" id="signupForm">
+                <div class="input-group">
+                    <label for="username">Full Name / Username</label>
+                    <input type="text" name="username" id="username" class="auth-input" placeholder="e.g. John Doe" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" name="email" id="email" class="auth-input" placeholder="name@example.com" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" class="auth-input" placeholder="Min. 8 characters" required>
+                </div>
+                
+                <button type="submit" class="auth-btn" id="signupButton">Create Account</button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Already have an account? <a href="/" class="auth-link">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

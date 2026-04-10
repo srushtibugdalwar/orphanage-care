@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Orphanage Medicine Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h1 class="auth-title">Welcome</h1>
+            <p class="auth-subtitle">Login to your caretaker account</p>
+            
+            <form method="POST" class="auth-form" id="loginForm">
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" name="email" id="email" class="auth-input" placeholder="name@example.com" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" class="auth-input" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="auth-btn" id="loginButton">Sign In</button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="/signup" class="auth-link">Create one now</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

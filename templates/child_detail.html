@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ child.name }} | Child Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="main-nav">
+        <div class="nav-brand">
+            <span>🏥</span> Orphanage Care
+        </div>
+        <div class="nav-actions">
+            {% if session['user'] %}
+                <span class="user-tag">{{ session['user'] }}</span>
+                <a href="/logout" class="logout-link">Logout</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        
+        <a href="/dashboard" class="p-back-btn">
+            <span>←</span> Back to Overview
+        </a>
+
+        <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 32px;">
+            <div style="background: var(--bg-gradient); padding: 40px; color: white;">
+                <h1 style="margin: 0; font-size: 2.5rem; font-weight: 800; letter-spacing: -1px;">{{ child.name }}</h1>
+                <div style="display: flex; gap: 20px; margin-top: 16px; opacity: 0.9;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 6px 16px; border-radius: 20px;">
+                        Age: <strong>{{ child.age }} Years</strong>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 6px 16px; border-radius: 20px;">
+                        Gender: <strong>{{ child.gender }}</strong>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 6px 16px; border-radius: 20px;">
+                        ID: <strong>#{{ child.id }}</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="padding: 32px;">
+                <h3 style="margin-top: 0; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+                    <span>💊</span> Medical History & Records
+                </h3>
+                
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Diagnose</th>
+                            <th>Medicine</th>
+                            <th>Dosage</th>
+                            <th>Scheduled Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td style="font-weight: 600; color: #334155;">{{ record.diagnose }}</td>
+                            <td><span class="badge badge-success">{{ record.medicine }}</span></td>
+                            <td style="color: #64748b;">{{ record.dosage }}</td>
+                            <td style="color: #64748b;">
+                                {% if record.datetime %}
+                                    {{ record.datetime.strftime('%b %d, %Y | %H:%M') }}
+                                {% else %}
+                                    TBD
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if record.is_done %}
+                                    <span class="badge badge-success">Completed</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not records %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">
+                                No medical records found for this child.
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
