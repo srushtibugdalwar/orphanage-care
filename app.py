@@ -205,11 +205,32 @@ def add_record():
         flash(f"Error: Child with ID {child_id} does not exist. Please register the child first.", "danger")
         return redirect('/dashboard')
 
+    vaccine = request.form.get('vaccination')
+    medicine = request.form.get('medicine')
+    diagnose = request.form.get('diagnose')
+    dosage = request.form.get('dosage')
+
+    # Logic: if vaccination is provided, use it as medicine and set defaults
+    if vaccine and not medicine:
+        medicine = vaccine
+        if not diagnose:
+            diagnose = "Vaccination"
+        if not dosage:
+            dosage = "Standard"
+    
+    # Fallback defaults if still missing
+    if not diagnose: diagnose = "General Checkup"
+    if not dosage: dosage = "As prescribed"
+
+    if not medicine:
+        flash("Error: Please provide either a medicine name or a vaccination name.", "danger")
+        return redirect('/dashboard')
+
     record = HealthRecord(
         child_id=child_id,
-        diagnose=request.form.get('diagnose', 'General Checkup'),
-        medicine=request.form.get('medicine'),
-        dosage=request.form.get('dosage', 'As prescribed'),
+        diagnose=diagnose,
+        medicine=medicine,
+        dosage=dosage,
         datetime=dt
     )
 

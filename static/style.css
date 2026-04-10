@@ -685,4 +685,20 @@ button:hover {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* 📢 Flash Messages */
+.flash-danger {
+    border-left: 5px solid #ef4444 !important;
+    background: #fef2f2 !important;
+}
+.flash-danger p {
+    color: #b91c1c !important;
+}
+.flash-success {
+    border-left: 5px solid #10b981 !important;
+    background: #ecfdf5 !important;
+}
+.flash-success p {
+    color: #065f46 !important;
+}
+
 
